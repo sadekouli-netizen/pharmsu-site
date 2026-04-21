@@ -1,0 +1,5 @@
+'use client';
+import Link from 'next/link';
+import { useCart } from '@/components/cart-context';
+import { products } from '@/data/products';
+export default function CartPage(){const {items,removeItem,updateQty}=useCart();const rows=items.map(i=>{const p=products.find(x=>x.id===i.productId);return p?{...p,quantity:i.quantity,total:i.quantity*p.price}:null}).filter(Boolean) as any[];const subtotal=rows.reduce((a,r)=>a+r.total,0);return <><h1>Cart</h1>{rows.length===0?<p>Cart is empty.</p>:<div className='grid'>{rows.map(r=><div className='card' key={r.id} style={{padding:'1rem'}}><h3>{r.name}</h3><p className='small'>${r.price.toFixed(2)} each</p><input type='number' min={r.minQty} value={r.quantity} onChange={e=>updateQty(r.id,Number(e.target.value))}/><button className='btn secondary' onClick={()=>removeItem(r.id)}>Remove</button><p><strong>${r.total.toFixed(2)}</strong></p></div>)}<div className='card' style={{padding:'1rem'}}><h3>Subtotal: ${subtotal.toFixed(2)}</h3><Link className='btn' href='/checkout'>Proceed to checkout</Link></div></div>}</>;}

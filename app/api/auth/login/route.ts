@@ -1,0 +1,4 @@
+import { NextResponse } from 'next/server';
+import { adminAuth, adminDb } from '@/lib/firebase.admin';
+import { appEnv } from '@/lib/env';
+export async function POST(request:Request){const {token}=await request.json();if(!token)return NextResponse.json({error:'Missing token'},{status:400});const decoded=await adminAuth.verifyIdToken(token);const sessionCookie=await adminAuth.createSessionCookie(token,{expiresIn:1000*60*60*24*5});const ref=adminDb.collection('users').doc(decoded.uid);const exists=await ref.get();if(!exists.exists)await ref.set({uid:decoded.uid,email:decoded.email,role:appEnv.adminEmails.includes(decoded.email??'')?'admin':'member',createdAt:new Date().toISOString()},{merge:true});const response=NextResponse.json({ok:true});response.cookies.set('pharmsu_session',sessionCookie,{httpOnly:true,secure:true,sameSite:'lax',path:'/'});return response;}
